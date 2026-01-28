@@ -1,5 +1,8 @@
-flask
-pandas
-matplotlib
-openpyxl
+Flask
 Flask-SQLAlchemy
+Flask-Login
+pandas
+openpyxl
+matplotlib
+psycopg2-binary
+Werkzeug
