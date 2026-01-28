@@ -1047,6 +1047,17 @@ def residency_page():
             elif str(r.get('STATUS')).strip() == 'بدون بوست': no_boast+=1
     return render_template_string(residency_template, year=year, results=results, df_empty=df.empty, boast_count=boast, no_boast_count=no_boast)
 
+# ... (بعد باقي الـ Routes)
+
+@app.route('/init-db')
+def init_db():
+    try:
+        with app.app_context():
+            db.create_all()
+        return "تم إنشاء جداول قاعدة البيانات بنجاح! ✅"
+    except Exception as e:
+        return f"حدث خطأ: {e}"
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
