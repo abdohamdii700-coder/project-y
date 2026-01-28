@@ -80,81 +80,367 @@ def load_user(user_id):
 # 4. TEMPLATES (MERGED ORIGINAL DESIGN + AUTH)
 # ---------------------------------------------------------
 
+# تصميم احترافي جديد (CSS Pro)
 auth_style = """
 <style>
-    body { font-family: 'Arial', sans-serif; background-color: #f0f4f8; text-align: center; padding-top: 50px; direction: ltr; }
-    .auth-box { background: white; width: 400px; margin: auto; padding: 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    h2 { color: #333; margin-bottom: 20px; font-weight: 900; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 25px; font-size: 16px; outline:none; text-align:center; }
-    input:focus { border-color: #667eea; box-shadow: 0 0 5px rgba(102,126,234,0.3); }
-    button { width: 95%; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 25px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-    button:hover { opacity: 0.9; transform: translateY(-2px); }
-    .flash { padding: 10px; border-radius: 10px; margin-bottom: 15px; color: white; font-weight: bold; }
-    .error { background: #ff6b6b; }
-    .success { background: #4caf50; }
-    .telegram-btn { background: #229ED9; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; padding: 12px; color: white; border-radius: 25px; font-weight: bold; margin-top: 15px; transition: 0.3s; }
-    .telegram-btn:hover { background: #1b7fb0; transform: translateY(-2px); }
-    a { color: #667eea; text-decoration: none; font-weight: bold; }
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body { 
+        font-family: 'Cairo', sans-serif; 
+        background-color: #f0f2f5; 
+        background-image: url('https://i.ibb.co/zHRhsP6j/bg.jpg'); /* نفس خلفيتك */
+        background-size: cover; 
+        background-position: center; 
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        direction: ltr; /* الحقول انجليزي فالافضل الاتجاه يسار */
+    }
+    
+    /* طبقة تغميق الخلفية عشان الكلام يبان */
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.05);
+        backdrop-filter: blur(3px);
+        z-index: -1;
+    }
+
+    .auth-box { 
+        background: rgba(255, 255, 255, 0.95); 
+        width: 100%;
+        max-width: 420px; 
+        padding: 40px 30px; 
+        border-radius: 20px; 
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
+        text-align: center;
+        transition: transform 0.3s ease;
+        margin: 20px; /* مسافة من الحواف في الموبايل */
+    }
+
+    /* تأثير الهوف على الكارت */
+    .auth-box:hover {
+        transform: translateY(-5px);
+    }
+
+    h2 { 
+        color: #2d3748; 
+        margin-bottom: 30px; 
+        font-weight: 700; 
+        font-size: 28px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: 1px;
+    }
+
+    /* تنسيق حقول الإدخال مع الأيقونات */
+    .input-group {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .input-group input { 
+        width: 100%; 
+        padding: 15px 15px 15px 45px; /* مسافة للأيقونة */
+        border: 2px solid #e2e8f0; 
+        border-radius: 12px; 
+        font-size: 16px; 
+        outline: none; 
+        transition: all 0.3s ease;
+        background: #f8fafc;
+        color: #4a5568;
+        font-family: 'Cairo', sans-serif;
+    }
+
+    .input-group i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a0aec0;
+        font-size: 18px;
+        transition: color 0.3s ease;
+    }
+
+    /* لما تضغط جوه الخانة */
+    .input-group input:focus { 
+        border-color: #667eea; 
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .input-group input:focus + i {
+        color: #667eea;
+    }
+
+    button { 
+        width: 100%; 
+        padding: 15px; 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+        color: white; 
+        border: none; 
+        border-radius: 12px; 
+        font-size: 18px; 
+        cursor: pointer; 
+        font-weight: 600; 
+        margin-top: 10px; 
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
+    }
+
+    button:hover { 
+        opacity: 0.95; 
+        transform: translateY(-2px); 
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
+    }
+
+    button:active {
+        transform: translateY(0);
+    }
+
+    .flash { 
+        padding: 12px; 
+        border-radius: 10px; 
+        margin-bottom: 20px; 
+        color: white; 
+        font-weight: 600; 
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .error { background: #ff6b6b; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); }
+    .success { background: #4caf50; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3); }
+
+    .links {
+        margin-top: 25px;
+        font-size: 15px;
+        color: #718096;
+    }
+
+    a { 
+        color: #667eea; 
+        text-decoration: none; 
+        font-weight: 700; 
+        transition: color 0.2s;
+    }
+    a:hover { color: #764ba2; text-decoration: underline; }
+
+    .telegram-btn { 
+        background: #229ED9; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 10px; 
+        text-decoration: none; 
+        padding: 12px; 
+        color: white; 
+        border-radius: 12px; 
+        font-weight: bold; 
+        margin-top: 15px; 
+        transition: 0.3s; 
+        box-shadow: 0 4px 10px rgba(34, 158, 217, 0.3);
+    }
+    .telegram-btn:hover { 
+        background: #1b7fb0; 
+        transform: translateY(-2px); 
+        color: white; 
+        text-decoration: none;
+    }
+
+    /* تحسينات للموبايل */
+    @media (max-width: 480px) {
+        .auth-box {
+            padding: 30px 20px;
+            width: 90%;
+        }
+        h2 { font-size: 24px; }
+        input, button { font-size: 16px; }
+    }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 """
 
-login_html = f"""<!doctype html><html><head><title>Login - AFM 27</title>{auth_style}</head><body>
+login_html = f"""<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AFM 27</title>
+    {auth_style}
+</head>
+<body>
 <div class="auth-box">
-    <h2>🔐 AFM 27 Login</h2>
-    {{% with messages = get_flashed_messages() %}}
-      {{% if messages %}}<div class="flash error">{{{{ messages[0] }}}}</div>{{% endif %}}
-    {{% endwith %}}
-    <form method="POST">
-        <input type="text" name="student_id" placeholder="Student ID (رقم الجلوس)" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-    </form>
-    <p style="color:#777; margin-top:15px;">New User? <a href="/register">Create Account</a></p>
-</div></body></html>"""
-
-register_html = f"""<!doctype html><html><head><title>Register - AFM 27</title>{auth_style}</head><body>
-<div class="auth-box">
-    <h2>📝 Create Account</h2>
-    {{% with messages = get_flashed_messages() %}}
-      {{% if messages %}}<div class="flash error">{{{{ messages[0] }}}}</div>{{% endif %}}
-    {{% endwith %}}
-    <form method="POST">
-        <input type="text" name="student_id" placeholder="Student ID (رقم الجلوس)" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Register</button>
-    </form>
-    <p style="font-size:13px; color:#d32f2f;">* Please use your REAL Student ID.</p>
-    <p style="color:#777;">Already registered? <a href="/login">Login</a></p>
-</div></body></html>"""
-
-payment_html = f"""<!doctype html><html><head><title>Subscription</title>{auth_style}</head><body>
-<div class="auth-box">
-    <h2>💰 Subscription Required</h2>
-    <p style="color:#555;">To access full results and analysis, please transfer <strong>100 EGP</strong>.</p>
+    <div class="page-icon"><i class="fas fa-user-graduate"></i></div>
+    <h2>Welcome Back</h2>
     
-    <div style="background: #ffebee; padding: 15px; border-radius: 15px; margin: 20px 0; border: 1px solid #ffcdd2;">
-        <strong>Vodafone Cash:</strong><br>
-        <span style="font-size: 24px; color: #c62828; font-weight:bold;">01002180473</span>
+    {{% with messages = get_flashed_messages() %}}
+      {{% if messages %}}
+      <div class="flash error"><i class="fas fa-exclamation-circle"></i> {{{{ messages[0] }}}}</div>
+      {{% endif %}}
+    {{% endwith %}}
+    
+    <form method="POST">
+        <div class="input-group">
+            <input type="text" name="student_id" placeholder="Student ID" required>
+            <i class="fas fa-id-card"></i>
+        </div>
+        <div class="input-group">
+            <input type="password" name="password" placeholder="Password" required>
+            <i class="fas fa-lock"></i>
+        </div>
+        <button type="submit">LOGIN</button>
+    </form>
+    
+    <div class="links">
+        <p>New Student? <a href="/register">Create Account</a></p>
+    </div>
+</div>
+</body>
+</html>"""
+
+# تحديث صفحة التسجيل لتستخدم نفس الستايل الاحترافي
+register_html = f"""<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - AFM 27</title>
+    {auth_style}
+</head>
+<body>
+<div class="auth-box">
+    <div class="page-icon"><i class="fas fa-user-plus"></i></div>
+    <h2>Create Account</h2>
+    
+    {{% with messages = get_flashed_messages() %}}
+      {{% if messages %}}
+      <div class="flash error"><i class="fas fa-exclamation-triangle"></i> {{{{ messages[0] }}}}</div>
+      {{% endif %}}
+    {{% endwith %}}
+    
+    <form method="POST">
+        <div class="input-group">
+            <input type="text" name="student_id" placeholder="Student ID (رقم الجلوس)" required>
+            <i class="fas fa-id-card"></i>
+        </div>
+        
+        <div class="input-group">
+            <input type="password" name="password" placeholder="Choose Password" required>
+            <i class="fas fa-lock"></i>
+        </div>
+        
+        <button type="submit">REGISTER</button>
+    </form>
+    
+    <div class="links">
+        <p>Already have an account? <a href="/login">Login</a></p>
+    </div>
+    
+    <p style="margin-top:20px; font-size:12px; color:#e53935; background:#ffebee; padding:5px; border-radius:5px;">
+        <i class="fas fa-info-circle"></i> Please use your REAL Student ID.
+    </p>
+</div>
+</body>
+</html>"""
+
+# صفحة دفع احترافية (Payment Pro)
+payment_html = f"""<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activation - AFM 27</title>
+    {auth_style}
+    <style>
+        /* ستايل خاص بكارت فودافون كاش */
+        .vf-card {{
+            background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(229, 57, 53, 0.3);
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+        }}
+        
+        /* لمعة جمالية على الكارت */
+        .vf-card::after {{
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: rgba(255,255,255,0.1);
+            transform: rotate(30deg);
+            pointer-events: none;
+        }}
+
+        .vf-title {{ font-size: 14px; opacity: 0.9; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }}
+        .vf-number {{ font-size: 26px; font-weight: 700; letter-spacing: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); font-family: 'Courier New', monospace; }}
+        
+        .divider {{
+            display: flex; align-items: center; text-align: center; color: #a0aec0; margin: 25px 0;
+        }}
+        .divider::before, .divider::after {{
+            content: ''; flex: 1; border-bottom: 1px solid #e2e8f0;
+        }}
+        .divider span {{ padding: 0 15px; font-size: 14px; font-weight: 600; }}
+
+        .helper-text {{ text-align: left; font-size: 14px; color: #4a5568; margin-bottom: 8px; font-weight: 600; }}
+    </style>
+</head>
+<body>
+<div class="auth-box">
+    <div style="margin-bottom: 20px;">
+        <i class="fas fa-crown fa-3x" style="color: #ffc107;"></i> 
+    </div>
+
+    <h2>Unlock Results</h2>
+    <p style="color: #718096; margin-bottom: 25px; line-height: 1.6;">
+        To access the full analysis, please transfer <strong>100 EGP</strong>.
+    </p>
+
+    <div class="vf-card">
+        <div class="vf-title"><i class="fas fa-wallet"></i> Vodafone Cash</div>
+        <div class="vf-number">01002180473</div>
     </div>
 
     {{% with messages = get_flashed_messages() %}}
-      {{% if messages %}}<div class="flash success">{{{{ messages[0] }}}}</div>{{% endif %}}
+      {{% if messages %}}
+      <div class="flash success">
+        <i class="fas fa-check-circle"></i> {{{{ messages[0] }}}}
+      </div>
+      {{% endif %}}
     {{% endwith %}}
     
     <form method="POST">
-        <button type="submit">✅ I have transferred the amount</button>
+        <button type="submit" style="background:#4caf50;">
+            Confirm Payment Sent <i class="fas fa-check" style="margin-left:5px;"></i>
+        </button>
     </form>
     
-    <div style="margin: 20px 0; border-top: 1px solid #eee; padding-top: 10px;">
-        <label style="font-size:14px; color:#555;">Send screenshot to Admin:</label>
-        <a href="https://t.me/Abdo_Hamdi6" target="_blank" class="telegram-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.93 1.23-5.46 3.62-.51.35-.98.52-1.4.51-.46-.01-1.35-.26-2.01-.48-.81-.27-1.44-.42-1.38-.88.03-.24.38-.49 1.03-.75 4.06-1.77 6.77-2.94 8.13-3.51 3.87-1.64 4.67-1.92 5.19-1.93.11 0 .37.03.54.17.14.12.18.28.2.45-.02.07-.02.13-.03.23z"/></svg>
-            Contact on Telegram
+    <div class="divider"><span>THEN</span></div>
+
+    <a href="https://t.me/Abdo_Hamdi6" target="_blank" class="telegram-btn">
+        <i class="fab fa-telegram-plane fa-lg"></i> Contact Admin on Telegram
+    </a>
+
+    <div class="links" style="margin-top: 25px;">
+        <a href="/logout" style="color: #e53935; font-size: 14px; display: inline-flex; align-items: center; gap: 5px;">
+            <i class="fas fa-sign-out-alt"></i> Logout
         </a>
     </div>
-    <br>
-    <a href="/logout" style="color:#d32f2f">Logout</a>
-</div></body></html>"""
+</div>
+</body>
+</html>"""
 
 admin_html = """
 <!doctype html>
