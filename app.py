@@ -446,7 +446,7 @@ payment_html = f"""<!doctype html>
 admin_html = """
 <!doctype html>
 <html>
-<head><title>Admin Panel</title><style>body{font-family:'Arial';padding:20px;background:#f0f4f8}.container{max-width:1000px;margin:auto;background:white;padding:20px;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,0.1)}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{padding:12px;border-bottom:1px solid #ddd;text-align:center}th{background:#333;color:white}.btn{padding:8px 15px;color:white;text-decoration:none;border-radius:5px}.approve{background:green}.logout{background:red;float:right}form{margin:20px 0;background:#e3f2fd;padding:15px;border-radius:8px;}</style></head>
+<head><title>Admin Panel</title><style>body{font-family:'Arial';padding:20px;background:#f0f4f8}.container{max-width:1000px;margin:auto;background:white;padding:20px;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,0.1)}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{padding:12px;border-bottom:1px solid #ddd;text-align:center}th{background:#333;color:white}.btn{padding:8px 15px;color:white;text-decoration:none;border-radius:5px;border:none;cursor:pointer}.approve{background:green}.logout{background:red;float:right}form{margin:20px 0;background:#e3f2fd;padding:15px;border-radius:8px;}</style></head>
 <body>
     <div class="container">
         <h1 style="display:inline-block">👮 Admin Panel</h1>
@@ -458,6 +458,13 @@ admin_html = """
             <p style="margin:5px 0; font-size:14px; color:#555;">Enter ID here. When this student registers, they will be active immediately.</p>
             <input type="text" name="student_id" placeholder="Student ID" required style="padding:8px; width:200px;">
             <button type="submit" class="btn approve">Add to Whitelist</button>
+        </form>
+
+        <form method="POST" action="/admin/reset_password" style="background:#fff3e0; border-left: 5px solid #ff9800;">
+            <h3>🔑 Reset Password</h3>
+            <p style="margin:5px 0; font-size:14px; color:#555;">Enter ID to reset their password to <strong>123456</strong></p>
+            <input type="text" name="student_id" placeholder="Student ID" required style="padding:8px; width:200px;">
+            <button type="submit" class="btn" style="background:#ff9800;">Reset to 123456</button>
         </form>
 
         <h3>📋 Pending Requests</h3>
@@ -479,7 +486,6 @@ admin_html = """
 </body>
 </html>
 """
-
 # ---------------------------------------------------------
 # 5. MAIN TEMPLATE (ORIGINAL STYLE & CHARTS RESTORED)
 # ---------------------------------------------------------
@@ -1129,6 +1135,25 @@ def preapprove_id():
         else:
             flash(f'ID {sid} is already whitelisted.', 'error')
             
+    return redirect(url_for('admin_panel'))
+@app.route('/admin/reset_password', methods=['POST'])
+@login_required
+def reset_password():
+    # لازم يكون أدمن عشان يقدر يعمل الخطوة دي
+    if not current_user.is_admin: 
+        return redirect(url_for('main'))
+    
+    sid = request.form.get('student_id').strip()
+    user = User.query.filter_by(student_id=sid).first()
+    
+    if user:
+        # بنعمل تشفير للباسورد الجديد (123456) ونحفظه
+        user.password = generate_password_hash('123456')
+        db.session.commit()
+        flash(f'تم تغيير باسورد الطالب {sid} بنجاح إلى 123456', 'success')
+    else:
+        flash(f'رقم الجلوس {sid} غير مسجل في الموقع!', 'error')
+        
     return redirect(url_for('admin_panel'))
 
 @app.route('/approve/<int:req_id>')
