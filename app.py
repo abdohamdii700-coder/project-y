@@ -37,9 +37,10 @@ login_manager.login_view = 'login'
 try:
     sheet1_df = pd.read_excel("data.xlsx", sheet_name="Sheet1")
     sheet2_df = pd.read_excel("data.xlsx", sheet_name="Sheet2")
-    # Clean IDs to strings
-    sheet1_df['ID'] = sheet1_df['ID'].astype(str).str.strip()
-    sheet2_df['ID'] = sheet2_df['ID'].astype(str).str.strip()
+    
+    # Clean IDs: Convert to string, remove '.0' at the end if it exists, then strip whitespace
+    sheet1_df['ID'] = sheet1_df['ID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
+    sheet2_df['ID'] = sheet2_df['ID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
 except Exception as e:
     print(f"Data Error: {e}")
     sheet1_df = pd.DataFrame()
