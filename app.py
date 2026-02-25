@@ -32,28 +32,31 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 # ---------------------------------------------------------
-# 2. LOAD DATA (EXCEL)
+# 2. LOAD DATA (CSV WITH ARABIC SUPPORT)
 # ---------------------------------------------------------
 try:
-    sheet1_df = pd.read_excel("data.xlsx", sheet_name="Sheet1")
-    sheet2_df = pd.read_excel("data.xlsx", sheet_name="Sheet2")
+    sheet1_df = pd.read_csv("data1.csv", encoding='utf-8-sig')
+    sheet2_df = pd.read_csv("data2.csv", encoding='utf-8-sig')
     
-    # Clean IDs: Convert to string, remove '.0' at the end if it exists, then strip whitespace
-    sheet1_df['ID'] = sheet1_df['ID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
-    sheet2_df['ID'] = sheet2_df['ID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
+    # السطرين الجداد دول لتنظيف أسماء الأعمدة من أي مسافات مخفية
+    sheet1_df.columns = sheet1_df.columns.str.strip()
+    sheet2_df.columns = sheet2_df.columns.str.strip()
+    
+    # تنظيف الـ IDs
+    sheet1_df['ID'] = sheet1_df['ID'].astype(str).str.strip()
+    sheet2_df['ID'] = sheet2_df['ID'].astype(str).str.strip()
 except Exception as e:
     print(f"Data Error: {e}")
     sheet1_df = pd.DataFrame()
     sheet2_df = pd.DataFrame()
-
 try:
-    residency_24_df = pd.read_excel("24.xlsx")
-    residency_25_df = pd.read_excel("25.xlsx")
-except:
+    residency_24_df = pd.read_csv("24.csv", encoding='utf-8-sig')
+    residency_25_df = pd.read_csv("25.csv", encoding='utf-8-sig')
+except Exception as e:
+    print(f"Residency Data Error: {e}")
     residency_24_df = pd.DataFrame()
     residency_25_df = pd.DataFrame()
-
-# ---------------------------------------------------------
+#---------------------------------------------------------
 # 3. DATABASE MODELS
 # ---------------------------------------------------------
 class User(UserMixin, db.Model):
@@ -75,8 +78,7 @@ class PreApproved(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
-
+    return db.session.get(User, int(user_id))
 # ---------------------------------------------------------
 # 4. TEMPLATES (MERGED ORIGINAL DESIGN + AUTH)
 # ---------------------------------------------------------
@@ -1259,16 +1261,23 @@ def main():
                                 "THIRD YEAR RANK C": ("THIRD YEAR", "#ede7f6"),
                                 "FOURTH YEAR RANK C": ("FOURTH YEAR", "#d0e0ff"),
                             }
+                            # ... (جزء Plot 2) ...
                             labels, values, colors = [], [], []
                             for col, (lbl, clr) in rank_cols.items():
                                 val = rank_data.get(col)
                                 if pd.notna(val):
-                                    labels.append(lbl)
-                                    values.append(val)
-                                    colors.append(clr)
-                            
+                                    try:
+                                        # إجبار القيمة إنها تكون رقم عشان نتفادى خطأ الـ string
+                                        numeric_val = float(val)
+                                        labels.append(lbl)
+                                        values.append(numeric_val)
+                                        colors.append(clr)
+                                    except ValueError:
+                                        pass # لو الخانة فاضية أو فيها كلام مش رقم، يتجاهلها
+                                        
                             if labels:
                                 plt.figure(figsize=(8, 5))
+                                # ... (باقي كود الرسم زي ما هو) ...
                                 plt.plot(labels, values, marker='o', linestyle='-', color='black', linewidth=2)
                                 for i in range(len(labels)):
                                     plt.plot(labels[i], values[i], '3', markersize=10, color=colors[i])
