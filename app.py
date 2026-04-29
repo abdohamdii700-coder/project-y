@@ -43,8 +43,9 @@ try:
     sheet2_df.columns = sheet2_df.columns.str.strip()
     
     # تنظيف الـ IDs
-    sheet1_df['ID'] = sheet1_df['ID'].astype(str).str.strip()
-    sheet2_df['ID'] = sheet2_df['ID'].astype(str).str.strip()
+   # بعد ✅
+sheet1_df['ID'] = sheet1_df['ID'].astype(float).astype(int).astype(str).str.strip()
+sheet2_df['ID'] = sheet2_df['ID'].astype(float).astype(int).astype(str).str.strip()
 except Exception as e:
     print(f"Data Error: {e}")
     sheet1_df = pd.DataFrame()
@@ -1179,6 +1180,9 @@ def main():
     if not current_user.has_paid and not current_user.is_admin:
         return redirect(url_for('payment'))
 
+    try:
+    student_id = str(int(float(current_user.student_id)))
+except:
     student_id = current_user.student_id
     mode = request.args.get('mode', 'search')
     
