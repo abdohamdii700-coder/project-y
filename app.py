@@ -43,9 +43,8 @@ try:
     sheet2_df.columns = sheet2_df.columns.str.strip()
     
     # تنظيف الـ IDs
-   # بعد ✅
-sheet1_df['ID'] = sheet1_df['ID'].astype(float).astype(int).astype(str).str.strip()
-sheet2_df['ID'] = sheet2_df['ID'].astype(float).astype(int).astype(str).str.strip()
+    sheet1_df['ID'] = sheet1_df['ID'].apply(lambda x: str(int(float(x))) if pd.notna(x) and str(x).strip() != '' else '').str.strip()
+    sheet2_df['ID'] = sheet2_df['ID'].apply(lambda x: str(int(float(x))) if pd.notna(x) and str(x).strip() != '' else '').str.strip()
 except Exception as e:
     print(f"Data Error: {e}")
     sheet1_df = pd.DataFrame()
@@ -1180,10 +1179,11 @@ def main():
     if not current_user.has_paid and not current_user.is_admin:
         return redirect(url_for('payment'))
 
-    try:
-    student_id = str(int(float(current_user.student_id)))
-except:
     student_id = current_user.student_id
+    try:
+        student_id = str(int(float(student_id)))
+    except:
+        pass
     mode = request.args.get('mode', 'search')
     
     result = None
