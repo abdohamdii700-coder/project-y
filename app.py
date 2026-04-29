@@ -45,6 +45,11 @@ try:
     # تنظيف الـ IDs
     sheet1_df['ID'] = sheet1_df['ID'].apply(lambda x: str(int(float(x))) if pd.notna(x) and str(x).strip() != '' else '').str.strip()
     sheet2_df['ID'] = sheet2_df['ID'].apply(lambda x: str(int(float(x))) if pd.notna(x) and str(x).strip() != '' else '').str.strip()
+
+    # تحويل الأعمدة الرقمية من string لأرقام
+    for col in sheet1_df.columns:
+        if col not in ['ID', 'NAME', 'PERCENTAGE']:
+            sheet1_df[col] = pd.to_numeric(sheet1_df[col], errors='coerce')
 except Exception as e:
     print(f"Data Error: {e}")
     sheet1_df = pd.DataFrame()
