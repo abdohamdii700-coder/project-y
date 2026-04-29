@@ -807,6 +807,33 @@ html_template = """
                 out of 1695 in the coming 1.5 years.<br>
                 (Approx <span class="highlight-number">{{ need_result['required_coming_percentage'] }}%</span> of the remaining total)
             </div>
+
+            {% if need_result['required_coming_percentage'] > 100 %}
+                <div class="motivational-message" style="background: linear-gradient(45deg, #e53935, #c62828);">
+                    😔 This target is currently <strong>out of reach</strong> — you'd need more than 100% of remaining marks.<br><br>
+                    Consider setting a more realistic target and keep grinding! 💡
+                </div>
+            {% elif need_result['required_coming_percentage'] < 0 %}
+                <div class="motivational-message" style="background: linear-gradient(45deg, #4CAF50, #45a049);">
+                    🎉 <strong>Congratulations!</strong> You've already <strong>exceeded</strong> your target percentage!<br><br>
+                    You're ahead of schedule — aim even higher! 🚀🏆
+                </div>
+            {% elif need_result['required_coming_percentage'] <= 50 %}
+                <div class="motivational-message" style="background: linear-gradient(45deg, #4CAF50, #45a049);">
+                    😊 This is a <strong>very achievable</strong> target! You only need <span class="highlight-number">{{ need_result['required_coming_percentage'] }}%</span> of the remaining marks.<br><br>
+                    Stay consistent and you'll get there easily! 💪✨
+                </div>
+            {% elif need_result['required_coming_percentage'] <= 75 %}
+                <div class="motivational-message" style="background: linear-gradient(45deg, #ff9800, #e65100);">
+                    🔥 Challenging but <strong>absolutely doable!</strong> You need <span class="highlight-number">{{ need_result['required_coming_percentage'] }}%</span> of the remaining marks.<br><br>
+                    Focus, work hard, and you'll make it! 📚💡
+                </div>
+            {% else %}
+                <div class="motivational-message" style="background: linear-gradient(45deg, #9c27b0, #6a1b9a);">
+                    ⚡ This is a <strong>tough target</strong> — you need <span class="highlight-number">{{ need_result['required_coming_percentage'] }}%</span> of the remaining marks.<br><br>
+                    It's difficult, but not impossible. Give it everything you've got! 🦁🔥
+                </div>
+            {% endif %}
         </div>
         {% endif %}
 
