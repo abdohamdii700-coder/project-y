@@ -17,6 +17,25 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'AFM27SuperSecret2026')
 
 # ---------------------------------------------------------
+# VERCEL PATH FIX (Prevents 404 when Vercel rewrites to /app.py)
+# ---------------------------------------------------------
+class VercelPathFix:
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        path = environ.get('PATH_INFO', '')
+        if path in ['/app.py', '/app', 'app.py']:
+            matched = environ.get('HTTP_X_MATCHED_PATH') or environ.get('HTTP_X_FORWARDED_URI')
+            if matched and matched not in ['/app.py', '/app', 'app.py']:
+                environ['PATH_INFO'] = matched
+            else:
+                environ['PATH_INFO'] = '/'
+        return self.wsgi_app(environ, start_response)
+
+app.wsgi_app = VercelPathFix(app.wsgi_app)
+
+# ---------------------------------------------------------
 # 1. DATABASE CONFIGURATION
 # ---------------------------------------------------------
 database_url = os.environ.get('DATABASE_URL')
