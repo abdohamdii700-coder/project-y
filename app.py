@@ -43,8 +43,13 @@ try:
     sheet2_df.columns = sheet2_df.columns.str.strip()
     
     # تنظيف الـ IDs
-    sheet1_df['ID'] = sheet1_df['ID'].astype(str).str.strip()
-    sheet2_df['ID'] = sheet2_df['ID'].astype(str).str.strip()
+    sheet1_df['ID'] = sheet1_df['ID'].apply(lambda x: str(int(float(x))) if pd.notna(x) and str(x).strip() != '' else '').str.strip()
+    sheet2_df['ID'] = sheet2_df['ID'].apply(lambda x: str(int(float(x))) if pd.notna(x) and str(x).strip() != '' else '').str.strip()
+
+    # تحويل الأعمدة الرقمية من string لأرقام
+    for col in sheet1_df.columns:
+        if col not in ['ID', 'NAME', 'PERCENTAGE']:
+            sheet1_df[col] = pd.to_numeric(sheet1_df[col], errors='coerce')
 except Exception as e:
     print(f"Data Error: {e}")
     sheet1_df = pd.DataFrame()
@@ -769,7 +774,7 @@ html_template = """
 
         {% if need_result %}
         <div class="distance-result">
-            <h2>🎯 Required Analysis (Remaining 1.5 Years)</h2>
+            <h2>🎯 Required Analysis (Remaining 1 Year)</h2>
             <h3 style="font-size: 30px; margin: 15px 0; color: #ffeb3b; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">{{ need_result['student_name'] }}</h3>
             
             <div class="progress-arrow-container">
@@ -799,9 +804,36 @@ html_template = """
             <div class="motivational-message">
                 To reach <span class="highlight-number">{{ need_result['target_percentage'] }}%</span> Total,<br>
                 You need to score <span class="highlight-number">{{ need_result['required_coming_score'] }}</span> marks 
-                out of 1695 in the coming 1.5 years.<br>
+                out of 1320 in the coming year.<br>
                 (Approx <span class="highlight-number">{{ need_result['required_coming_percentage'] }}%</span> of the remaining total)
             </div>
+
+            {% if need_result['required_coming_percentage'] > 100 %}
+                <div class="motivational-message" style="background: linear-gradient(45deg, #e53935, #c62828);">
+                    😔 This target is currently <strong>out of reach</strong> — you'd need more than 100% of remaining marks.<br><br>
+                    Consider setting a more realistic target and keep grinding! 💡
+                </div>
+            {% elif need_result['required_coming_percentage'] < 0 %}
+                <div class="motivational-message" style="background: linear-gradient(45deg, #4CAF50, #45a049);">
+                    🎉 <strong>Congratulations!</strong> You've already <strong>exceeded</strong> your target percentage!<br><br>
+                    You're ahead of schedule — aim even higher! 🚀🏆
+                </div>
+            {% elif need_result['required_coming_percentage'] <= 50 %}
+                <div class="motivational-message" style="background: linear-gradient(45deg, #4CAF50, #45a049);">
+                    😊 This is a <strong>very achievable</strong> target! You only need <span class="highlight-number">{{ need_result['required_coming_percentage'] }}%</span> of the remaining marks.<br><br>
+                    Stay consistent and you'll get there easily! 💪✨
+                </div>
+            {% elif need_result['required_coming_percentage'] <= 75 %}
+                <div class="motivational-message" style="background: linear-gradient(45deg, #ff9800, #e65100);">
+                    🔥 Challenging but <strong>absolutely doable!</strong> You need <span class="highlight-number">{{ need_result['required_coming_percentage'] }}%</span> of the remaining marks.<br><br>
+                    Focus, work hard, and you'll make it! 📚💡
+                </div>
+            {% else %}
+                <div class="motivational-message" style="background: linear-gradient(45deg, #9c27b0, #6a1b9a);">
+                    ⚡ This is a <strong>tough target</strong> — you need <span class="highlight-number">{{ need_result['required_coming_percentage'] }}%</span> of the remaining marks.<br><br>
+                    It's difficult, but not impossible. Give it everything you've got! 🦁🔥
+                </div>
+            {% endif %}
         </div>
         {% endif %}
 
@@ -882,7 +914,7 @@ html_template = """
                         {% set css_class = 'second-year' %}
                     {% elif key_upper in ['THIRD YEAR', 'LONG THIRD YEAR', 'RESEARCH STEP III', 'COMMUNICATION STEP III', 'PROFESSIONALISM STEP III'] %}
                         {% set css_class = 'third-year' %}
-                    {% elif key_upper in ['FOURTH YEAR', 'LONG FOURTH YEAR', 'RESEARCH STEP IIII', 'COMMUNICATION STEP IIII', 'PROFESSIONALISM STEP IIII'] %}
+                    {% elif key_upper in ['FOURTH YEAR', 'FOURTH YEAR TERM 2', 'LONG FOURTH YEAR', 'RESEARCH STEP IIII', 'COMMUNICATION STEP IIII', 'PROFESSIONALISM STEP IIII'] %}
                         {% set css_class = 'fourth-year' %}
                     {% elif key_upper in ['TOTAL', 'TOTAL RANK', '%', 'PERCENTAGE'] %}
                         {% set css_class = 'totals' %}
@@ -1180,6 +1212,10 @@ def main():
         return redirect(url_for('payment'))
 
     student_id = current_user.student_id
+    try:
+        student_id = str(int(float(student_id)))
+    except:
+        pass
     mode = request.args.get('mode', 'search')
     
     result = None
@@ -1190,9 +1226,9 @@ def main():
     distance_result = None
 
     # Constants
-    CURRENT_TOTAL_MAX = 3180 
+    CURRENT_TOTAL_MAX = 3555 
     FINAL_TOTAL_MAX = 4875
-    REMAINING_MAX = 1695
+    REMAINING_MAX = 1320
 
     if mode == 'search':
         if not sheet1_df.empty:
