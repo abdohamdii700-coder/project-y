@@ -2,7 +2,7 @@ import os
 import re
 import io
 import base64
-from flask import Flask, render_template_string, request, redirect, url_for, flash
+from flask import Flask, render_template_string, request, redirect, url_for, flash, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -73,9 +73,23 @@ except Exception as e:
     print(f"Data Error: {e}")
     sheet1_df = pd.DataFrame()
     sheet2_df = pd.DataFrame()
+def load_residency_data(base_name):
+    base_dir = os.path.dirname(__file__) if '__file__' in globals() else '.'
+    for ext in ['.csv', '.xlsx']:
+        fpath = os.path.join(base_dir, f"{base_name}{ext}")
+        if os.path.exists(fpath):
+            try:
+                if ext == '.csv':
+                    return pd.read_csv(fpath, encoding='utf-8-sig')
+                else:
+                    return pd.read_excel(fpath)
+            except Exception as err:
+                print(f"Error loading {fpath}: {err}")
+    return pd.DataFrame()
+
 try:
-    residency_24_df = pd.read_csv("24.csv", encoding='utf-8-sig')
-    residency_25_df = pd.read_csv("25.csv", encoding='utf-8-sig')
+    residency_24_df = load_residency_data("24")
+    residency_25_df = load_residency_data("25")
 except Exception as e:
     print(f"Residency Data Error: {e}")
     residency_24_df = pd.DataFrame()
@@ -1037,6 +1051,7 @@ residency_template = """
             <a href="/" class="nav-btn home">🏠 Home</a>
             <a href="/residency?year=2024" class="nav-btn year-2024 {{ 'active' if year == '2024' else '' }}">2024</a>
             <a href="/residency?year=2025" class="nav-btn year-2025 {{ 'active' if year == '2025' else '' }}">2025</a>
+            <a href="/residency/download?year={{ year }}" class="nav-btn" style="background: linear-gradient(45deg, #11998e, #38ef7d);">📥 Download CSV ({{ year }})</a>
         </div>
         
         {% if df_empty %}
@@ -1422,6 +1437,19 @@ def residency_page():
             if str(r.get('STATUS')).strip() == 'بوست': boast+=1
             elif str(r.get('STATUS')).strip() == 'بدون بوست': no_boast+=1
     return render_template_string(residency_template, year=year, results=results, df_empty=df.empty, boast_count=boast, no_boast_count=no_boast)
+
+@app.route('/residency/download')
+@login_required
+def download_residency():
+    if not current_user.has_paid and not current_user.is_admin:
+        return redirect(url_for('payment'))
+    year = request.args.get('year', '2024')
+    filename = "25.csv" if year == '2025' else "24.csv"
+    base_dir = os.path.dirname(__file__) if '__file__' in globals() else '.'
+    fpath = os.path.join(base_dir, filename)
+    if os.path.exists(fpath):
+        return send_file(fpath, as_attachment=True, download_name=f"residency_{year}.csv", mimetype='text/csv')
+    return "File not found", 404
 
 # ... (بعد باقي الـ Routes)
 
