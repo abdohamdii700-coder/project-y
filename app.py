@@ -759,6 +759,24 @@ html_template = """
     </style>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+      
+      function toggleTerm2() {
+          const rows = document.querySelectorAll('.term2-row');
+          const arrow = document.getElementById('term2Arrow');
+          let willHide = false;
+          rows.forEach(r => {
+              if (r.style.display === 'none') {
+                  r.style.display = '';
+                  willHide = false;
+              } else {
+                  r.style.display = 'none';
+                  willHide = true;
+              }
+          });
+          if (arrow) {
+              arrow.textContent = willHide ? '▲' : '▼';
+          }
+      }
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
 </head>
@@ -811,7 +829,7 @@ html_template = """
 
         {% if need_result %}
         <div class="distance-result">
-            <h2>🎯 Required Analysis (Remaining 1 Year - 5th Year / سنة خامسة فقط)</h2>
+            <h2>🎯 Required Analysis (Remaining 1 Year - 5th Year)</h2>
             <h3 style="font-size: 30px; margin: 15px 0; color: #ffeb3b; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">{{ need_result['student_name'] }}</h3>
             
             <div class="progress-arrow-container">
@@ -841,7 +859,7 @@ html_template = """
             <div class="motivational-message">
                 To reach <span class="highlight-number">{{ need_result['target_percentage'] }}%</span> Total,<br>
                 You need to score <span class="highlight-number">{{ need_result['required_coming_score'] }}</span> marks 
-                out of 1245 in the 5th Year (سنة خامسة فقط).<br>
+                out of 1245 in the 5th Year.<br>
                 (Approx <span class="highlight-number">{{ need_result['required_coming_percentage'] }}%</span> of the remaining total)
             </div>
 
@@ -940,7 +958,7 @@ html_template = """
         {% else %}
         {% if result %}
         <table>
-            <tr><td colspan="2" class="title">👨‍🎓 اسم الطالب : {{ result['NAME'] }}</td></tr>
+            <tr><td colspan="2" class="title">👨‍🎓 Student: {{ result['NAME'] }}</td></tr>
             <tr><th class="title">🔢 MARK</th><th class="title">📚 SUBJECT</th></tr>
             {% for key, value in result.items() %}
                 {% if key != 'ID' and key != 'NAME' %}
@@ -951,7 +969,7 @@ html_template = """
                         {% set css_class = 'second-year' %}
                     {% elif key_upper in ['THIRD YEAR', 'LONG THIRD YEAR', 'RESEARCH STEP III', 'COMMUNICATION STEP III', 'PROFESSIONALISM STEP III'] %}
                         {% set css_class = 'third-year' %}
-                    {% elif key_upper in ['FOURTH YEAR', 'FOURTH YEAR TERM 2', 'LONG FOURTH YEAR', 'RESEARCH STEP IIII', 'COMMUNICATION STEP IIII', 'PROFESSIONALISM STEP IIII'] %}
+                    {% elif key_upper in ['FOURTH YEAR', 'FOURTH YEAR TERM 2', 'LONG FOURTH YEAR', 'RESEARCH STEP IV', 'COMMUNICATION STEP IV', 'PROFESSIONALISM STEP IV', 'RESEARCH STEP IIII', 'COMMUNICATION STEP IIII', 'PROFESSIONALISM STEP IIII'] %}
                         {% set css_class = 'fourth-year' %}
                     {% elif key_upper in ['TOTAL', 'TOTAL RANK', '%', 'PERCENTAGE'] %}
                         {% set css_class = 'totals' %}
@@ -960,7 +978,25 @@ html_template = """
                     {% else %}
                         {% set css_class = '' %}
                     {% endif %}
-                    <tr class="{{ css_class }}"><td>{{ value }}</td><td>{{ key }}</td></tr>
+                    {% if key_upper == 'FOURTH YEAR' %}
+                        <tr class="{{ css_class }}" style="cursor: pointer; user-select: none;" onclick="toggleTerm2()" title="Click to collapse/expand Term 2">
+                            <td>
+                                {{ value }}
+                                <span id="term2Arrow" style="margin-right: 8px; font-size: 13px; font-weight: bold; color: #333;">▼</span>
+                            </td>
+                            <td>
+                                {{ key }}
+                                <span style="font-size: 11px; color: #555; font-weight: normal; margin-right: 5px;">(Click to collapse/expand Term 2)</span>
+                            </td>
+                        </tr>
+                    {% elif key_upper in ['FOURTH YEAR TERM 2', 'FOURTH YEAR TERM 2 RANK'] %}
+                        <tr class="{{ css_class }} term2-row" style="background-color: #eaf1fb;">
+                            <td style="padding-right: 20px;">{{ value }}</td>
+                            <td style="padding-right: 20px;">&#8627; {{ key }}</td>
+                        </tr>
+                    {% else %}
+                        <tr class="{{ css_class }}"><td>{{ value }}</td><td>{{ key }}</td></tr>
+                    {% endif %}
                 {% endif %}
             {% endfor %}
             <tr class="footer"><td colspan="2">💻 Designed and Coded By : Abdo Hamdy Aly</td></tr>
@@ -1009,26 +1045,40 @@ residency_template = """
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #f0f4f8; text-align: center; position: relative; }
         body::before { content: ""; background-image: url('https://i.ibb.co/zHRhsP6j'); background-size: cover; background-position: center; opacity: 0.1; top: 0; left: 0; bottom: 0; right: 0; position: fixed; z-index: -1; }
-        .container { margin: 60px auto; width: 90%; max-width: 1400px; background-color: rgba(255, 255, 255, 0.9); padding: 20px 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
-        .nav-buttons { display: flex; justify-content: center; gap: 20px; margin: 30px 0; flex-wrap: wrap; }
-        .nav-btn { padding: 15px 30px; font-size: 18px; font-weight: bold; border: none; border-radius: 25px; cursor: pointer; text-decoration: none; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .container { margin: 40px auto; width: 92%; max-width: 1400px; background-color: rgba(255, 255, 255, 0.95); padding: 25px 35px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .nav-buttons { display: flex; justify-content: center; gap: 15px; margin: 25px 0; flex-wrap: wrap; }
+        .nav-btn { padding: 12px 26px; font-size: 16px; font-weight: bold; border: none; border-radius: 25px; cursor: pointer; text-decoration: none; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s; }
+        .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
         .nav-btn.home { background: linear-gradient(45deg, #667eea, #764ba2); }
         .nav-btn.year-2024 { background: linear-gradient(45deg, #ff6b6b, #ee5a52); }
         .nav-btn.year-2025 { background: linear-gradient(45deg, #4ecdc4, #44a08d); }
         .nav-btn.year-2026 { background: linear-gradient(45deg, #8e2de2, #4a00e0); }
-        .nav-btn.active { background: linear-gradient(45deg, #333, #555); }
-        .stats-container { display: flex; justify-content: center; gap: 30px; margin: 30px 0; flex-wrap: wrap; }
-        .stat-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        .stat-number { font-size: 36px; font-weight: bold; margin: 10px 0; }
-        .stat-label { font-size: 16px; opacity: 0.9; }
-        .table-container { overflow-x: auto; margin: 30px 0; }
-        table { border-collapse: collapse; margin: 0 auto; width: 100%; font-size: 16px; direction: rtl; background-color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; }
-        th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 10px; }
-        td { padding: 12px 10px; border: 1px solid #ddd; }
-        .boast-yes { background-color: #c8e6c9 !important; font-weight: bold; }
-        .boast-no { background-color: #ffe0b2 !important; }
-        .search-box { margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.5); border-radius: 10px; }
-        .search-box input { font-size: 18px; padding: 10px 20px; width: 300px; border: 2px solid #ddd; border-radius: 25px; outline: none; }
+        .nav-btn.active { background: linear-gradient(45deg, #2d3748, #1a202c); box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
+        
+        .stats-container { display: flex; justify-content: center; gap: 20px; margin: 25px 0 15px 0; flex-wrap: wrap; }
+        .stat-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.12); min-width: 130px; }
+        .stat-number { font-size: 32px; font-weight: 800; margin: 6px 0; }
+        .stat-label { font-size: 15px; font-weight: 600; opacity: 0.95; }
+        
+        .legend-container { display: flex; justify-content: center; gap: 25px; margin: 15px 0 25px 0; flex-wrap: wrap; font-size: 14px; font-weight: 600; }
+        .legend-item { display: inline-flex; align-items: center; gap: 8px; color: #4a5568; }
+        .legend-dot { width: 16px; height: 16px; border-radius: 4px; display: inline-block; border: 1px solid rgba(0,0,0,0.15); }
+        
+        .search-box { margin: 20px auto; padding: 10px; max-width: 450px; }
+        .search-box input { font-size: 16px; padding: 12px 24px; width: 100%; border: 2px solid #e2e8f0; border-radius: 30px; outline: none; transition: border-color 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .search-box input:focus { border-color: #667eea; }
+        
+        .table-container { overflow-x: auto; margin: 20px 0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+        table { border-collapse: collapse; margin: 0 auto; width: 100%; font-size: 15px; direction: rtl; background-color: #fff; }
+        th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 12px; font-weight: 700; border: 1px solid rgba(0,0,0,0.08); }
+        td { padding: 12px 10px; border: 1px solid #e0e0e0; }
+        .rank-col { font-weight: bold; width: 75px; text-align: center; }
+        
+        /* Row Colors matching requested scheme */
+        .row-boast { background-color: #c8e6c9 !important; font-weight: 600; color: #1b5e20; }
+        .row-no-boast { background-color: #ffecb3 !important; color: #424242; }
+        .row-waiting, .row-not-taken { background-color: #ffcdd2 !important; color: #b71c1c; }
+        tbody tr:hover { filter: brightness(0.96); transition: filter 0.15s ease; }
     </style>
     <script>
         function filterTable() {
@@ -1065,9 +1115,22 @@ residency_template = """
         {% else %}
             <div class="stats-container">
                 <div class="stat-box"><div class="stat-label">Total</div><div class="stat-number">{{ results|length }}</div></div>
-                <div class="stat-box" style="background:#4ecdc4"><div class="stat-label">With Post</div><div class="stat-number">{{ boast_count }}</div></div>
-                <div class="stat-box" style="background:#ff6b6b"><div class="stat-label">Without Post</div><div class="stat-number">{{ no_boast_count }}</div></div>
+                <div class="stat-box" style="background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);"><div class="stat-label">With Post</div><div class="stat-number">{{ boast_count }}</div></div>
+                <div class="stat-box" style="background: linear-gradient(135deg, #ffb300 0%, #fb8c00 100%);"><div class="stat-label">Without Post</div><div class="stat-number">{{ no_boast_count }}</div></div>
+                {% if waiting_count > 0 %}
+                <div class="stat-box" style="background: linear-gradient(135deg, #e53935 0%, #c62828 100%);"><div class="stat-label">Waiting</div><div class="stat-number">{{ waiting_count }}</div></div>
+                {% endif %}
+                {% if not_taken_count > 0 %}
+                <div class="stat-box" style="background: linear-gradient(135deg, #78909c 0%, #455a64 100%);"><div class="stat-label">Not Selected</div><div class="stat-number">{{ not_taken_count }}</div></div>
+                {% endif %}
             </div>
+            
+            <div class="legend-container">
+                <span class="legend-item"><span class="legend-dot" style="background-color: #c8e6c9;"></span> بوست (With Post)</span>
+                <span class="legend-item"><span class="legend-dot" style="background-color: #ffecb3;"></span> بدون بوست (Without Post)</span>
+                <span class="legend-item"><span class="legend-dot" style="background-color: #ffcdd2;"></span> ويتنج / لم يختر (Waiting / Not Selected)</span>
+            </div>
+
             <div class="search-box"><input type="text" id="searchInput" onkeyup="filterTable()" placeholder="🔍 Search..."></div>
             <div class="table-container">
                 <table id="residencyTable">
@@ -1080,9 +1143,11 @@ residency_template = """
                     </thead>
                     <tbody>
                         {% for row in results %}
-                        <tr class="{% if row.get('STATUS') == 'بوست' %}boast-yes{% elif row.get('STATUS') in ['بدون بوست', 'Waiting'] %}boast-no{% endif %}">
+                        <tr class="{{ row.get('_row_class', '') }}">
                             {% for col in columns %}
-                            <td class="{% if col == 'RANK' %}rank-col{% endif %}">{{ row.get(col, '') }}</td>
+                            {% set cell_val = row.get(col, '') %}
+                            {% if cell_val in ['nan', 'NaN', 'None', '-'] %}{% set cell_val = '' %}{% endif %}
+                            <td class="{% if col == 'RANK' %}rank-col{% endif %}">{{ cell_val }}</td>
                             {% endfor %}
                         </tr>
                         {% endfor %}
@@ -1448,17 +1513,61 @@ def residency_page():
         df = residency_25_df
     else:
         df = residency_24_df
+        
     results = []
     columns = []
-    boast = 0; no_boast = 0
+    boast = 0
+    no_boast = 0
+    waiting_count = 0
+    not_taken_count = 0
+    
     if not df.empty:
-        columns = [c for c in df.columns]
-        results = df.to_dict('records')
-        for r in results:
-            st = str(r.get('STATUS', '')).strip()
-            if st == 'بوست': boast+=1
-            elif st in ['بدون بوست', 'Waiting', '-']: no_boast+=1
-    return render_template_string(residency_template, year=year, results=results, columns=columns, df_empty=df.empty, boast_count=boast, no_boast_count=no_boast)
+        columns = [c for c in df.columns if not c.startswith('_')]
+        raw_results = df.to_dict('records')
+        
+        for r in raw_results:
+            cleaned_row = {}
+            for col in columns:
+                v = r.get(col, '')
+                v_str = str(v).strip()
+                if pd.isna(v) or v_str.lower() in ['nan', 'none', '-']:
+                    cleaned_row[col] = ''
+                else:
+                    if isinstance(v, float) and v.is_integer():
+                        cleaned_row[col] = int(v)
+                    else:
+                        cleaned_row[col] = v_str
+            
+            st = str(cleaned_row.get('STATUS', '')).strip()
+            res = str(cleaned_row.get('RESIDENCY', '')).strip()
+            wt = str(cleaned_row.get('WAITING', '')).strip()
+            
+            if st == 'بوست':
+                cleaned_row['_row_class'] = 'row-boast'
+                boast += 1
+            elif st == 'بدون بوست' or (res and res not in ['ويتنج', 'لم يحضر', 'Waiting']):
+                cleaned_row['_row_class'] = 'row-no-boast'
+                no_boast += 1
+            elif wt.lower() == 'waiting' or st in ['ويتنج', 'Waiting'] or res in ['ويتنج', 'Waiting']:
+                cleaned_row['_row_class'] = 'row-waiting'
+                waiting_count += 1
+            else:
+                cleaned_row['_row_class'] = 'row-not-taken'
+                not_taken_count += 1
+                
+            results.append(cleaned_row)
+            
+    return render_template_string(
+        residency_template,
+        year=year,
+        results=results,
+        columns=columns,
+        df_empty=df.empty,
+        boast_count=boast,
+        no_boast_count=no_boast,
+        waiting_count=waiting_count,
+        not_taken_count=not_taken_count
+    )
 
 @app.route('/residency/download')
 @login_required
