@@ -90,6 +90,7 @@ def load_residency_data(base_name):
 try:
     residency_24_df = load_residency_data("24")
     residency_25_df = load_residency_data("25")
+    residency_26_df = load_residency_data("26")
 except Exception as e:
     print(f"Residency Data Error: {e}")
     residency_24_df = pd.DataFrame()
@@ -807,7 +808,7 @@ html_template = """
 
         {% if need_result %}
         <div class="distance-result">
-            <h2>🎯 Required Analysis (Remaining 1 Year)</h2>
+            <h2>🎯 Required Analysis (Remaining 1 Year - 5th Year / سنة خامسة فقط)</h2>
             <h3 style="font-size: 30px; margin: 15px 0; color: #ffeb3b; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">{{ need_result['student_name'] }}</h3>
             
             <div class="progress-arrow-container">
@@ -837,7 +838,7 @@ html_template = """
             <div class="motivational-message">
                 To reach <span class="highlight-number">{{ need_result['target_percentage'] }}%</span> Total,<br>
                 You need to score <span class="highlight-number">{{ need_result['required_coming_score'] }}</span> marks 
-                out of 1320 in the coming year.<br>
+                out of 1245 in the 5th Year (سنة خامسة فقط).<br>
                 (Approx <span class="highlight-number">{{ need_result['required_coming_percentage'] }}%</span> of the remaining total)
             </div>
 
@@ -1011,6 +1012,7 @@ residency_template = """
         .nav-btn.home { background: linear-gradient(45deg, #667eea, #764ba2); }
         .nav-btn.year-2024 { background: linear-gradient(45deg, #ff6b6b, #ee5a52); }
         .nav-btn.year-2025 { background: linear-gradient(45deg, #4ecdc4, #44a08d); }
+        .nav-btn.year-2026 { background: linear-gradient(45deg, #8e2de2, #4a00e0); }
         .nav-btn.active { background: linear-gradient(45deg, #333, #555); }
         .stats-container { display: flex; justify-content: center; gap: 30px; margin: 30px 0; flex-wrap: wrap; }
         .stat-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
@@ -1051,6 +1053,7 @@ residency_template = """
             <a href="/" class="nav-btn home">🏠 Home</a>
             <a href="/residency?year=2024" class="nav-btn year-2024 {{ 'active' if year == '2024' else '' }}">2024</a>
             <a href="/residency?year=2025" class="nav-btn year-2025 {{ 'active' if year == '2025' else '' }}">2025</a>
+            <a href="/residency?year=2026" class="nav-btn year-2026 {{ 'active' if year == '2026' else '' }}">2026</a>
             <a href="/residency/download?year={{ year }}" class="nav-btn" style="background: linear-gradient(45deg, #11998e, #38ef7d);">📥 Download CSV ({{ year }})</a>
         </div>
         
@@ -1065,11 +1068,19 @@ residency_template = """
             <div class="search-box"><input type="text" id="searchInput" onkeyup="filterTable()" placeholder="🔍 Search..."></div>
             <div class="table-container">
                 <table id="residencyTable">
-                    <thead><tr><th>RANK</th><th>RESIDENCY</th><th>STATUS</th></tr></thead>
+                    <thead>
+                        <tr>
+                            {% for col in columns %}
+                            <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
                     <tbody>
                         {% for row in results %}
-                        <tr class="{% if row.get('STATUS') == 'بوست' %}boast-yes{% elif row.get('STATUS') == 'بدون بوست' %}boast-no{% endif %}">
-                            <td class="rank-col">{{ row.get('RANK') }}</td><td>{{ row.get('RESIDENCY') }}</td><td>{{ row.get('STATUS') }}</td>
+                        <tr class="{% if row.get('STATUS') == 'بوست' %}boast-yes{% elif row.get('STATUS') in ['بدون بوست', 'Waiting'] %}boast-no{% endif %}">
+                            {% for col in columns %}
+                            <td class="{% if col == 'RANK' %}rank-col{% endif %}">{{ row.get(col, '') }}</td>
+                            {% endfor %}
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -1260,9 +1271,9 @@ def main():
     distance_result = None
 
     # Constants
-    CURRENT_TOTAL_MAX = 3555 
+    CURRENT_TOTAL_MAX = 3630 
     FINAL_TOTAL_MAX = 4875
-    REMAINING_MAX = 1320
+    REMAINING_MAX = 1245
 
     if mode == 'search':
         if not sheet1_df.empty:
@@ -1428,15 +1439,23 @@ def residency_page():
     if not current_user.has_paid and not current_user.is_admin:
         return redirect(url_for('payment'))
     year = request.args.get('year', '2024')
-    df = residency_25_df if year == '2025' else residency_24_df
+    if year == '2026':
+        df = residency_26_df
+    elif year == '2025':
+        df = residency_25_df
+    else:
+        df = residency_24_df
     results = []
+    columns = []
     boast = 0; no_boast = 0
     if not df.empty:
+        columns = [c for c in df.columns]
         results = df.to_dict('records')
         for r in results:
-            if str(r.get('STATUS')).strip() == 'بوست': boast+=1
-            elif str(r.get('STATUS')).strip() == 'بدون بوست': no_boast+=1
-    return render_template_string(residency_template, year=year, results=results, df_empty=df.empty, boast_count=boast, no_boast_count=no_boast)
+            st = str(r.get('STATUS', '')).strip()
+            if st == 'بوست': boast+=1
+            elif st in ['بدون بوست', 'Waiting', '-']: no_boast+=1
+    return render_template_string(residency_template, year=year, results=results, columns=columns, df_empty=df.empty, boast_count=boast, no_boast_count=no_boast)
 
 @app.route('/residency/download')
 @login_required
@@ -1444,7 +1463,7 @@ def download_residency():
     if not current_user.has_paid and not current_user.is_admin:
         return redirect(url_for('payment'))
     year = request.args.get('year', '2024')
-    filename = "25.csv" if year == '2025' else "24.csv"
+    filename = "26.csv" if year == '2026' else ("25.csv" if year == '2025' else "24.csv")
     base_dir = os.path.dirname(__file__) if '__file__' in globals() else '.'
     fpath = os.path.join(base_dir, filename)
     if os.path.exists(fpath):
