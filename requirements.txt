@@ -6,3 +6,4 @@ openpyxl
 matplotlib
 psycopg2-binary
 Werkzeug
+psycopg[binary]
